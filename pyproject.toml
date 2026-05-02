@@ -1,0 +1,16 @@
+[project]
+name = "marco-polo"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "beautifulsoup4>=4.12.0",
+    "ddgs>=9.14.1",
+    "duckduckgo-search>=8.1.1",
+    "langchain>=1.2.15",
+    "langchain-community>=0.4.1",
+    "langchain-openai>=1.1.13",
+    "pydantic>=2",
+    "python-dotenv>=1.0.0",
+]
