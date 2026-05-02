@@ -172,6 +172,7 @@ class CompetitorFinder:
         website_text = self.scrape_website(website_input.website)
         profile = self.extract_business_profile(website_input, website_text)
         query = self.build_search_query(website_input, profile)
+        print(f"Search query: {query}")
         search_results = self.search_competitors(query)
         competitors = self.extract_competitors(website_input, profile, search_results)
         self.print_competitors(competitors)
