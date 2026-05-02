@@ -1,0 +1,82 @@
+@startmindmap
+title GitHub Copilot Customization
+
+* GitHub Copilot\nCustomization
+
+** Instruction Levels
+*** Org Instructions\n[GitHub.com only | no IDE effect]
+**** Use: coding standards, security tone, OWASP, naming conventions
+**** Enable in VS Code: organizationInstructions.enabled=true
+*** Personal Instructions\n[GitHub.com only | you only]
+**** Use: personal tone, language preference, quick team testing
+*** Repo-Wide\n.github/copilot-instructions.md\n[always-on | all IDEs + GitHub.com]
+**** Use: tech stack, naming, arch patterns, security, error handling, docs
+**** NOT for: one-off tasks, user input/variables, conditional rules, multi-step workflows
+**** Also: AGENTS.md (open standard), CLAUDE.md (Claude Code compat)
+*** Path-Specific\n.github/instructions/NAME.instructions.md\n[glob pattern via applyTo]
+**** Frontmatter: name (opt), description (opt), applyTo glob (opt)
+**** Use: language-specific rules, framework patterns, dir-specific standards
+**** NOT supported in: JetBrains, Xcode, GitHub.com chat, mobile
+
+** Reusable Task Files
+*** Prompt Files\n.github/prompts/*.prompt.md\n[on-demand | explicit invoke only]
+**** Frontmatter: mode (ask/edit/agent), description, tools[]
+**** Dynamic vars: ${input:varName:placeholder}
+**** Invoke: /filename in chat, Attach context menu, /instructions menu
+**** Use: one-off tasks, user input needed, code gen, refactor, analysis
+**** NOT for: persistent behavior, auto-run tasks, complex autonomous workflows
+**** Supported: VS Code, Visual Studio, JetBrains ONLY
+**** AI generate: /create-prompt in chat
+*** Agent Skills\nskills/<name>/SKILL.md\n[auto-invoked by intent | open standard]
+**** Frontmatter: name* (req), description* (req), license, compatibility, metadata, allowed-tools
+**** NOT supported: mode, tools, model, dynamic vars
+**** Progressive loading: name+desc at startup (~100 tokens), body on activation
+**** Use: reusable shareable expertise, cross-session availability, team workflows
+**** NOT for: one-off tasks, user input needed, mode/tool/model control
+**** Supported: Claude Code, VS Code, JetBrains + compatible agents
+
+** Agents
+*** Custom Agents\n.github/agents/*.agent.md\n[full autonomous workflow]
+**** Frontmatter: name, description, tools[], model[] (priority order), handoffs[]
+**** handoffs: label, agent, prompt, send true/false
+**** Repo agents: commit to default branch → github.com/copilot/agents
+**** VS Code agents: chat.agentFilesLocations setting
+**** Use: multi-step tasks, sustained context, code review, multi-file refactor
+**** NOT for: one-off tasks, broad behavioral guidance
+**** AI generate: /create-agent in chat
+**** Old name: .chatmode.md (rename to .agent.md)
+*** AGENTS.md\n[plain markdown | no schema | open standard]
+**** Linux Foundation standard | 20+ tools support
+**** Purpose: README for agents — build, test, conventions
+*** Agent Plugins\n[preview | VS Code marketplace]
+**** Bundles: slash commands, skills, agents, hooks, MCP servers
+**** Structure: plugin.json, skills/, agents/, hooks/, scripts/, .mcp.json
+**** Install: @agentPlugins in Extensions or Chat: Install Plugin From Source
+**** Cross-tool: works in VS Code, Copilot CLI, Claude Code
+**** Caution: can run code on machine — review before install
+
+** MCP Servers\n.vscode/mcp.json\n[workspace-scoped]
+*** Config fields: type (stdio/http/sse), command, args, env
+*** Reference in agent tools: servername/* or servername/toolname
+*** Secrets: use ${input:varName} or VS Code secret storage — never hardcode
+*** Example use: daily-tasks prompt via GitHub MCP → Tasks.md file
+
+** Hard Limits
+*** 4,000 chars max per instruction file for PR code review (silently ignored beyond)
+*** ~1,000 lines soft limit before quality degrades
+*** No external URL fetching in instructions — copy content directly
+*** Inline autocomplete NOT affected by instructions (chat only)
+*** PR review uses BASE branch instructions only
+*** Both repo-wide + path-specific applied when both match same file
+
+** Best Practices
+*** Start with 10–20 instructions, iterate one at a time
+*** Keep tools[] minimal in agents
+*** Separate planning agents from implementation agents
+*** Define explicit scope limits + escalation behavior in agents
+*** Avoid conflicting instructions across files (behavior is non-deterministic)
+*** Split repo-wide (cross-cutting) vs path-specific (language/dir) concerns
+*** Fix non-working instructions: make specific+imperative, shorten file, resolve conflicts
+*** Anti-patterns: applyTo:'**' for lang rules, stale library refs, 2000-line files, conflicting files
+
+@endmindmap

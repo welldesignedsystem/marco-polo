@@ -1,2 +1,3 @@
-# marco-polo
-Github Copilot blog artifacts
+```bash
+ docker run -v $(pwd):/data plantuml/plantuml -tsvg misc/mindmap.puml
+```
