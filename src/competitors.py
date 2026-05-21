@@ -1,79 +1,25 @@
 import json
-import os
-from typing import Any
 
 from langchain_community.document_loaders import WebBaseLoader
 from langchain_community.utilities.duckduckgo_search import DuckDuckGoSearchAPIWrapper
-from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
-from pydantic import BaseModel, Field, field_validator
+
+from src.model_utils import ModelFactory
+from src.models import (
+    BusinessProfile,
+    CompetitorList,
+    WebsiteInput,
+    coerce_model,
+)
 
 
 load_dotenv()
 
 
-class WebsiteInput(BaseModel):
-    website: str
-    search_focus: str = Field(
-        description="Extra user-provided context to narrow the competitor search."
-    )
-
-    @field_validator("website")
-    @classmethod
-    def normalize_website(cls, website: str) -> str:
-        if website.startswith(("http://", "https://")):
-            return website
-
-        return f"https://{website}"
-
-
-class BusinessProfile(BaseModel):
-    company_name: str = Field(description="The company name inferred from the website.")
-    business_domain: str = Field(description="The primary business domain or industry.")
-    industry_terms: list[str] = Field(
-        description="Specific search terms that describe this company's industry."
-    )
-    customer_segments: list[str] = Field(
-        description="Customer types, market segments, or buyer personas served."
-    )
-    geographic_focus: list[str] = Field(
-        description="Relevant countries, regions, or local markets."
-    )
-    evidence: list[str] = Field(
-        description="Short facts from the website supporting the classification."
-    )
-
-
-class Competitor(BaseModel):
-    name: str = Field(description="Competitor company name.")
-    website: str | None = Field(default=None, description="Competitor website if known.")
-    reason: str = Field(description="Why this company is a likely competitor.")
-
-
-class CompetitorList(BaseModel):
-    competitors: list[Competitor] = Field(
-        description="Top competitors in the same industry or customer segment."
-    )
-
-
 class CompetitorFinder:
     def __init__(self) -> None:
-        model_name = os.getenv("OPENROUTER_MODEL", "openai/gpt-4.1-mini")
-        api_key = os.getenv("OPENROUTER_API_KEY")
-        if not api_key:
-            raise ValueError("OPENROUTER_API_KEY environment variable is required.")
-
-        self.llm = ChatOpenAI(
-            model=model_name,
-            temperature=0,
-            api_key=api_key,
-            base_url="https://openrouter.ai/api/v1",
-            default_headers={
-                "HTTP-Referer": os.getenv("OPENROUTER_SITE_URL", ""),
-                "X-Title": os.getenv("OPENROUTER_APP_NAME", "marco-polo"),
-            },
-        )
-        self.search = DuckDuckGoSearchAPIWrapper(max_results=10)
+        self.llm = ModelFactory.create_chat_llm()
+        self.search = DuckDuckGoSearchAPIWrapper()
 
     def get_input(self) -> WebsiteInput:
         return WebsiteInput(
@@ -109,7 +55,7 @@ class CompetitorFinder:
                 ),
             ]
         )
-        return self._coerce_model(response, BusinessProfile)
+        return coerce_model(response, BusinessProfile)
 
     def build_search_query(
         self, website_input: WebsiteInput, profile: BusinessProfile
@@ -123,8 +69,8 @@ class CompetitorFinder:
             f"-{profile.company_name}"
         ).strip()
 
-    def search_competitors(self, query: str) -> list[dict[str, str]]:
-        return self.search.results(query, max_results=10)
+    def search_competitors(self, query: str, max_results: int = 10) -> list[dict[str, str]]:
+        return self.search.results(query, max_results=max_results * 2)
 
     def extract_competitors(
         self,
@@ -152,7 +98,7 @@ class CompetitorFinder:
                 ),
             ]
         )
-        return self._coerce_model(response, CompetitorList)
+        return coerce_model(response, CompetitorList)
 
     def print_competitors(self, competitors: CompetitorList) -> None:
         competitor_array = [
@@ -161,19 +107,13 @@ class CompetitorFinder:
         ]
         print(json.dumps(competitor_array, indent=2))
 
-    def _coerce_model(self, response: Any, model_type: type[BaseModel]) -> Any:
-        if isinstance(response, model_type):
-            return response
-
-        return model_type.model_validate(response)
-
     def run(self) -> None:
         website_input = self.get_input()
         website_text = self.scrape_website(website_input.website)
         profile = self.extract_business_profile(website_input, website_text)
         query = self.build_search_query(website_input, profile)
         print(f"Search query: {query}")
-        search_results = self.search_competitors(query)
+        search_results = self.search_competitors(query, website_input.max_results)
         competitors = self.extract_competitors(website_input, profile, search_results)
         self.print_competitors(competitors)
 
