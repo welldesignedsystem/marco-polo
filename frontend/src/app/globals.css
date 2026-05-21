@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-bg: 248 250 252;
+    --color-card: 255 255 255;
+    --color-primary: 79 70 229;
+    --color-primary-light: 99 102 241;
+    --color-accent: 16 185 129;
+    --color-text: 15 23 42;
+    --color-muted: 100 116 139;
+    --color-border: 226 232 240;
+  }
+
+  * {
+    @apply border-slate-200;
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-2xl border border-slate-100 shadow-sm;
+  }
+
+  .card-hover {
+    @apply card transition-all duration-200 hover:shadow-md hover:-translate-y-0.5;
+  }
+
+  .input-field {
+    @apply w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900
+      placeholder:text-slate-400
+      focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20
+      transition-colors duration-150;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 py-3
+      text-sm font-semibold text-white shadow-sm
+      hover:bg-indigo-500 active:bg-indigo-700
+      focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
+      disabled:cursor-not-allowed disabled:opacity-50
+      transition-all duration-150;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200
+      bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm
+      hover:bg-slate-50 active:bg-slate-100
+      focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
+      transition-all duration-150;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+
+  .badge-primary {
+    @apply badge bg-indigo-50 text-indigo-700;
+  }
+
+  .badge-emerald {
+    @apply badge bg-emerald-50 text-emerald-700;
+  }
+
+  .badge-amber {
+    @apply badge bg-amber-50 text-amber-700;
+  }
+
+  .skeleton {
+    @apply rounded-xl bg-slate-200 animate-pulse;
+  }
+}
