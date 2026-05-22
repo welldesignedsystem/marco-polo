@@ -59,7 +59,12 @@ class TavilyStrategy(SearchStrategy):
         self._client = TavilyClient(api_key=api_key)
 
     def search(self, query: str, max_results: int = 10) -> list[dict[str, str]]:
-        response = self._client.search(query=query, max_results=max_results)
+        logger.info("Performing Tavily search for query: %s result count: %d", query, max_results)
+        response = self._client.search(
+            query=query, 
+            max_results=max_results,
+            search_depth="advanced",
+            )
         results = response.get("results", []) if isinstance(response, dict) else response.results
         results_out = [
             SearchResult(
