@@ -1,25 +1,31 @@
 import json
+import os
+import re
+
+os.environ.setdefault("USER_AGENT", "marco-polo/0.1")
 
 from langchain_community.document_loaders import WebBaseLoader
-from langchain_community.utilities.duckduckgo_search import DuckDuckGoSearchAPIWrapper
 from dotenv import load_dotenv
 
-from src.model_utils import ModelFactory
+from src.model_utils import ModelFactory, structured_call
+from src.logging_config import get_logger
 from src.models import (
     BusinessProfile,
     CompetitorList,
     WebsiteInput,
-    coerce_model,
 )
+from src.searcher import create_searcher
 
 
 load_dotenv()
 
 
 class CompetitorFinder:
-    def __init__(self) -> None:
+    def __init__(self, search_provider: str | None = None) -> None:
         self.llm = ModelFactory.create_chat_llm()
-        self.search = DuckDuckGoSearchAPIWrapper()
+        self._searcher = create_searcher(search_provider)
+
+        self.logger = get_logger(__name__)
 
     def get_input(self) -> WebsiteInput:
         return WebsiteInput(
@@ -36,8 +42,9 @@ class CompetitorFinder:
     def extract_business_profile(
         self, website_input: WebsiteInput, website_text: str
     ) -> BusinessProfile:
-        structured_llm = self.llm.with_structured_output(BusinessProfile)
-        response = structured_llm.invoke(
+        return structured_call(
+            self.llm,
+            BusinessProfile,
             [
                 (
                     "system",
@@ -53,24 +60,23 @@ class CompetitorFinder:
                     f"Search focus: {website_input.search_focus}\n\n"
                     f"Website text:\n{website_text}",
                 ),
-            ]
+            ],
         )
-        return coerce_model(response, BusinessProfile)
 
     def build_search_query(
         self, website_input: WebsiteInput, profile: BusinessProfile
     ) -> str:
-        terms = " ".join(profile.industry_terms[:4])
-        segments = " ".join(profile.customer_segments[:2])
-        locations = " ".join(profile.geographic_focus[:2])
-        return (
+        terms = " ".join(profile.industry_terms[:3])
+        segments = " ".join(profile.customer_segments[:1])
+        locations = " ".join(profile.geographic_focus[:1])
+        query = (
             f'top competitors "{profile.business_domain}" {terms} '
-            f"{segments} {locations} {website_input.search_focus} "
-            f"-{profile.company_name}"
-        ).strip()
+            f"{segments} {locations} {website_input.search_focus}"
+        )
+        return re.sub(r"\s+", " ", query).strip()[:240]
 
     def search_competitors(self, query: str, max_results: int = 10) -> list[dict[str, str]]:
-        return self.search.results(query, max_results=max_results * 2)
+        return self._searcher.search(query, max_results=max_results)
 
     def extract_competitors(
         self,
@@ -78,8 +84,9 @@ class CompetitorFinder:
         profile: BusinessProfile,
         search_results: list[dict[str, str]],
     ) -> CompetitorList:
-        structured_llm = self.llm.with_structured_output(CompetitorList)
-        response = structured_llm.invoke(
+        return structured_call(
+            self.llm,
+            CompetitorList,
             [
                 (
                     "system",
@@ -93,12 +100,11 @@ class CompetitorFinder:
                     f"{website_input.model_dump_json(indent=2)}\n\n"
                     "Business profile:\n"
                     f"{profile.model_dump_json(indent=2)}\n\n"
-                    "DuckDuckGo search results:\n"
+                    f"{self._searcher.label} search results:\n"
                     f"{json.dumps(search_results, indent=2)}",
                 ),
-            ]
+            ],
         )
-        return coerce_model(response, CompetitorList)
 
     def print_competitors(self, competitors: CompetitorList) -> None:
         competitor_array = [
@@ -108,14 +114,19 @@ class CompetitorFinder:
         print(json.dumps(competitor_array, indent=2))
 
     def run(self) -> None:
-        website_input = self.get_input()
-        website_text = self.scrape_website(website_input.website)
-        profile = self.extract_business_profile(website_input, website_text)
-        query = self.build_search_query(website_input, profile)
-        print(f"Search query: {query}")
-        search_results = self.search_competitors(query, website_input.max_results)
-        competitors = self.extract_competitors(website_input, profile, search_results)
-        self.print_competitors(competitors)
+        try:
+            website_input = self.get_input()
+            website_text = self.scrape_website(website_input.website)
+            profile = self.extract_business_profile(website_input, website_text)
+            query = self.build_search_query(website_input, profile)
+            self.logger.info("Search query: %s", query)
+            search_results = self.search_competitors(query, website_input.max_results)
+            competitors = self.extract_competitors(website_input, profile, search_results)
+            self.print_competitors(competitors)
+        except Exception as e:
+            # Log full stack trace for diagnosing failures during run
+            self.logger.exception("Unhandled error in CompetitorFinder.run: %s", e)
+            raise
 
 
 def main() -> None:

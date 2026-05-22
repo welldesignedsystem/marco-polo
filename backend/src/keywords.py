@@ -1,14 +1,16 @@
 import json
+import os
+
+os.environ.setdefault("USER_AGENT", "marco-polo/0.1")
 
 from langchain_community.document_loaders import WebBaseLoader
 from dotenv import load_dotenv
 
-from src.model_utils import ModelFactory
+from src.model_utils import ModelFactory, structured_call
 from src.models import (
     BusinessProfile,
     KeywordList,
     WebsiteInput,
-    coerce_model,
 )
 
 
@@ -34,8 +36,9 @@ class KeywordFinder:
     def extract_business_profile(
         self, website_input: WebsiteInput, website_text: str
     ) -> BusinessProfile:
-        structured_llm = self.llm.with_structured_output(BusinessProfile)
-        response = structured_llm.invoke(
+        return structured_call(
+            self.llm,
+            BusinessProfile,
             [
                 (
                     "system",
@@ -51,15 +54,15 @@ class KeywordFinder:
                     f"Search focus: {website_input.search_focus}\n\n"
                     f"Website text:\n{website_text}",
                 ),
-            ]
+            ],
         )
-        return coerce_model(response, BusinessProfile)
 
     def extract_keywords(
         self, website_input: WebsiteInput, profile: BusinessProfile
     ) -> KeywordList:
-        structured_llm = self.llm.with_structured_output(KeywordList)
-        response = structured_llm.invoke(
+        return structured_call(
+            self.llm,
+            KeywordList,
             [
                 (
                     "system",
@@ -76,9 +79,8 @@ class KeywordFinder:
                     "Business profile:\n"
                     f"{profile.model_dump_json(indent=2)}",
                 ),
-            ]
+            ],
         )
-        return coerce_model(response, KeywordList)
 
     def print_keywords(self, keywords: KeywordList) -> None:
         keyword_array = [keyword.model_dump() for keyword in keywords.keywords]
