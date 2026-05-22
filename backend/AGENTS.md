@@ -15,6 +15,8 @@ uv run marco-polo-api                  # FastAPI dev server (uvicorn with reload
 
 - `POST /competitors` — body `{"website", "search_focus", "max_results"}`
 - `POST /keywords` — same shape
+- `POST /register` — body `{"name", "email", "website?"}` — placeholder, returns `{"status": "ok"}`
+- `POST /report` — body `{"email", "website", "description?"}` — placeholder. Later will invoke Claude skill and email a detailed SEO/GEO/AEO report.
 - Entrypoint `src.api:run` registered in `pyproject.toml` under `[project.scripts]`.
 
 ## Env

@@ -74,3 +74,15 @@ class KeywordList(BaseModel):
     keywords: list[SearchKeyword] = Field(
         description="Top search keywords and queries for SEO and content strategy."
     )
+
+
+class Registration(BaseModel):
+    name: str
+    email: str
+    website: str | None = None
+
+
+class ReportRequest(BaseModel):
+    email: str
+    website: str
+    description: str = Field(default="", description="Optional context about the website or report needs.")
