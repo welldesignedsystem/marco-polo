@@ -70,14 +70,11 @@ export default function GeoPage() {
         <div className="mx-auto max-w-6xl px-4 flex items-center justify-between h-14">
           <Link href="/" className="flex items-center gap-3 group">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 group-hover:bg-indigo-500 transition-colors">
-              <span className="text-xs font-bold text-white">MP</span>
+              <span className="text-xs font-bold text-white">aa</span>
             </div>
             <span className="text-sm font-semibold text-slate-900">aeo-app.io</span>
           </Link>
           <div className="flex items-center gap-4">
-            <Link href="/" className="text-sm text-slate-500 hover:text-slate-700 transition-colors">
-              Live Tools
-            </Link>
             <Link href="/guide" className="text-sm text-slate-500 hover:text-slate-700 transition-colors">
               Guide
             </Link>

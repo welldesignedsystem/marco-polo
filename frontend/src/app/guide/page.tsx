@@ -117,7 +117,7 @@ function PillarSection({ pillar }: { pillar: PillarProps }) {
             <div className="lg:col-span-2">
               <div className="card-hover p-6 h-full border-t-4" style={{ borderTopColor: pillar.index === 1 ? "#6366f1" : pillar.index === 2 ? "#10b981" : "#f59e0b" }}>
                 <h3 className="font-semibold text-slate-900 flex items-center gap-2 mb-4">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-50 text-xs font-bold text-indigo-600">MP</span>
+                  <span className="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-50 text-xs font-bold text-indigo-600">aa</span>
                   How aeo-app.io helps
                 </h3>
                 <ul className="space-y-3">
@@ -163,12 +163,6 @@ export default function GuidePage() {
           </Link>
           <div className="flex items-center gap-4">
             <Link
-              href="/"
-              className="text-sm text-slate-500 hover:text-slate-700 transition-colors"
-            >
-              Live Tools
-            </Link>
-            <Link
               href="/guide"
               className="text-sm font-medium text-indigo-600"
             >
@@ -188,7 +182,7 @@ export default function GuidePage() {
       <div className="relative overflow-hidden bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-indigo-900/30 via-transparent to-transparent" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-emerald-900/20 via-transparent to-transparent" />
-        <div className="relative mx-auto max-w-6xl px-4 pt-24 pb-28 text-center">
+        <div className="relative mx-auto max-w-6xl px-4 pt-24 pb-20 text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-4 py-1.5 text-xs font-medium text-indigo-300 mb-6">
             <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" />
             The future of search is multi-engine
@@ -212,34 +206,32 @@ export default function GuidePage() {
               Learn More
             </Link>
           </div>
-        </div>
-      </div>
 
-      {/* Overview cards */}
-      <div className="relative -mt-16 z-10" id="overview">
-        <div className="mx-auto max-w-6xl px-4">
-          <div className="grid gap-4 sm:grid-cols-3">
-            {[
-              { title: "SEO", label: "Traditional search", slug: "seo", color: "border-indigo-500/30 bg-indigo-500/5", text: "text-indigo-600" },
-              { title: "GEO", label: "AI-generated answers", slug: "geo", color: "border-emerald-500/30 bg-emerald-500/5", text: "text-emerald-600" },
-              { title: "AEO", label: "Voice & answer engines", slug: "aeo", color: "border-amber-500/30 bg-amber-500/5", text: "text-amber-600" },
-            ].map((pill) => (
-              <Link
-                key={pill.title}
-                href={`/guide/${pill.slug}`}
-                className={`card border-2 ${pill.color} px-6 py-5 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5`}
-              >
-                <div className="flex items-center gap-3">
-                  <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${pill.text} bg-white text-lg font-bold shadow-sm`}>
-                    {pill.title[0]}
-                  </span>
-                  <div>
-                    <p className={`text-sm font-bold ${pill.text}`}>{pill.title}</p>
-                    <p className="text-xs text-slate-500">{pill.label}</p>
+          {/* Overview cards */}
+          <div className="mt-16" id="overview">
+            <div className="grid gap-4 sm:grid-cols-3">
+              {[
+                { title: "SEO", label: "Traditional search", slug: "seo", color: "border-indigo-500/30 bg-indigo-500/5", text: "text-indigo-600" },
+                { title: "GEO", label: "AI-generated answers", slug: "geo", color: "border-emerald-500/30 bg-emerald-500/5", text: "text-emerald-600" },
+                { title: "AEO", label: "Voice & answer engines", slug: "aeo", color: "border-amber-500/30 bg-amber-500/5", text: "text-amber-600" },
+              ].map((pill) => (
+                <Link
+                  key={pill.title}
+                  href={`/guide/${pill.slug}`}
+                  className={`card border-2 ${pill.color} px-6 py-5 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${pill.text} bg-white text-lg font-bold shadow-sm`}>
+                      {pill.title[0]}
+                    </span>
+                    <div>
+                      <p className={`text-sm font-bold ${pill.text}`}>{pill.title}</p>
+                      <p className="text-xs text-slate-500">{pill.label}</p>
+                    </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </div>

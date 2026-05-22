@@ -73,9 +73,6 @@ export default function AeoPage() {
             <span className="text-sm font-semibold text-slate-900">aeo-app.io</span>
           </Link>
           <div className="flex items-center gap-4">
-            <Link href="/" className="text-sm text-slate-500 hover:text-slate-700 transition-colors">
-              Live Tools
-            </Link>
             <Link href="/guide" className="text-sm text-slate-500 hover:text-slate-700 transition-colors">
               Guide
             </Link>

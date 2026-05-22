@@ -79,7 +79,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-6xl px-4 flex items-center justify-between h-14">
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600">
-              <span className="text-xs font-bold text-white">aeo-app.io</span>
+              <span className="text-xs font-bold text-white">aa</span>
             </div>
             <span className="text-sm font-semibold text-slate-900">aeo-app.io</span>
           </div>
