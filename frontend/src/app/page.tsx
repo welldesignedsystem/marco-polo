@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import RegistrationForm from "@/components/RegistrationForm";
 import SearchForm from "@/components/SearchForm";
 import BusinessProfile from "@/components/BusinessProfile";
@@ -73,6 +74,31 @@ export default function LandingPage() {
 
   return (
     <main className="min-h-screen">
+      {/* Nav */}
+      <div className="border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-50">
+        <div className="mx-auto max-w-6xl px-4 flex items-center justify-between h-14">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600">
+              <span className="text-xs font-bold text-white">aeo-app.io</span>
+            </div>
+            <span className="text-sm font-semibold text-slate-900">aeo-app.io</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/guide"
+              className="text-sm text-slate-500 hover:text-slate-700 transition-colors"
+            >
+              Guide
+            </Link>
+            <Link
+              href="/dashboard"
+              className="btn-primary text-xs px-4 py-2"
+            >
+              Dashboard
+            </Link>
+          </div>
+        </div>
+      </div>
       {/* Hero */}
       <div className="relative overflow-hidden bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/40 via-transparent to-transparent" />

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Marco Polo — Competitive Intelligence & SEO",
+  title: "aeo-app.io — Competitive Intelligence & SEO",
   description:
     "Analyze any website to uncover competitors and generate high-value SEO keywords.",
 };

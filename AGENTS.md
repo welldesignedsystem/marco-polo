@@ -1,4 +1,4 @@
-# marco-polo — monorepo
+# aeo-app.io — monorepo
 
 ## Backend (`backend/`)
 

@@ -93,9 +93,9 @@ export default function DashboardPage() {
         <div className="mx-auto max-w-5xl px-4 flex items-center justify-between h-14">
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600">
-              <span className="text-xs font-bold text-white">MP</span>
+              <span className="text-xs font-bold text-white">aa</span>
             </div>
-            <span className="text-sm font-semibold text-slate-900">Marco Polo</span>
+            <span className="text-sm font-semibold text-slate-900">aeo-app.io</span>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-slate-500">{user.email}</span>
