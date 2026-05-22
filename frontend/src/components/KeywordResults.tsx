@@ -69,7 +69,7 @@ export default function KeywordResults({ keywords }: Props) {
                     {intentConfig[k.intent]?.label ?? k.intent}
                   </span>
                 </td>
-                <td className="px-5 py-4 text-sm text-slate-500 max-w-xs">
+                <td className="px-5 py-4 text-sm text-slate-500 whitespace-normal break-words min-w-[200px]">
                   {k.reason}
                 </td>
               </tr>
