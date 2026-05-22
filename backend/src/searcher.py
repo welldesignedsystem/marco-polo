@@ -76,6 +76,7 @@ class TavilyStrategy(SearchStrategy):
 
 
 def create_searcher(provider: str | None = None) -> SearchStrategy:
+    logger.info("Creating search strategy for provider: %s", provider)
     provider = provider or os.getenv("SEARCH_PROVIDER", "duckduckgo")
     if provider == "tavily":
         return TavilyStrategy()

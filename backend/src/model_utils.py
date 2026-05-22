@@ -140,12 +140,12 @@ def structured_call(
         enhanced.append((role, content))
 
     response = llm.invoke(enhanced)
-    logger.info("LLM response for %s: %s", model_type.__name__, str(response)[:5000], "-" * 40)
+    logger.info("LLM response for %s: %s", model_type.__name__, str(response)[:5000])
     text = response.content.strip()
     text = re.sub(r"^```(?:json)?\s*", "", text)
     text = re.sub(r"\s*```$", "", text)
     text = text.strip()
-    logger.info("Cleaned LLM response for %s: %s", model_type.__name__, text[:5000], "-" * 40)
+    logger.info("Cleaned LLM response for %s: %s", model_type.__name__, text[:5000])
     try:
         data = json.loads(text)
     except json.JSONDecodeError:

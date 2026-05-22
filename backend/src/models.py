@@ -22,7 +22,7 @@ class WebsiteInput(BaseModel):
         description="Number of search results to return.",
     )
     search_provider: str = Field(
-        default="duckduckgo",
+        default="tavily",
         description="Search provider: duckduckgo or tavily.",
     )
 
