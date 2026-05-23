@@ -221,3 +221,8 @@ __marimo__/
 node_modules/
 .next/
 
+# Logs directories
+backend/logs/
+frontend/logs/
+report/logs/
+
