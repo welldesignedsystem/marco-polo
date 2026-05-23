@@ -1,14 +1,18 @@
 # aeo-app.io — monorepo
 
+See `backend/AGENTS.md` (report-generator agent workflow), `frontend/AGENTS.md` (frontend agent), and `backend/SKILLS.md` (compliance methodology / scoring rubric).
+
 ## Backend (`backend/`)
 
-Python 3.14, managed with `uv`.
+Python 3.14, managed with `uv`. Copy `backend/.example.env` → `backend/.env` and fill in API keys.
 
 ```bash
 cd backend
-uv run python src/competitors.py       # CLI: scrape → profile → find competitors
-uv run python src/keywords.py          # CLI: scrape → profile → generate SEO keywords
-uv run marco-polo-api                  # FastAPI dev server (uvicorn reload) on :8000
+uv sync                               # Install from lockfile
+uv run python src/report.py           # CLI: URL → deep research → PDF compliance report
+uv run python src/competitors.py      # CLI: scrape → profile → find competitors
+uv run python src/keywords.py         # CLI: scrape → profile → generate SEO keywords
+uv run marco-polo-api                 # FastAPI dev server (uvicorn reload) on :8000
 ```
 
 ### API
@@ -24,7 +28,7 @@ Entrypoint: `src.api:run` in `pyproject.toml` under `[project.scripts]`.
 
 ### Env
 
-Required in `backend/.env` (loaded via `python-dotenv` at import time in `api.py`, `competitors.py`, `keywords.py`). **`opencode.json` blocks agent from reading `.env`** — the code loads it itself at runtime.
+Required in `backend/.env` (loaded via `python-dotenv` at import time in `api.py`, `competitors.py`, `keywords.py`, `report.py`, `tools.py`). **`opencode.json` blocks agent from reading `.env`** — the code loads it itself at runtime.
 
 ```
 OPENROUTER_API_KEY=sk-or-v1-...
@@ -36,7 +40,7 @@ TAVILY_API_KEY=tvly-...
 | `OPENROUTER_MODEL` | `openai/gpt-4.1-mini` | Override model |
 | `LLM_PROVIDER` | auto-detect if `OPENROUTER_API_KEY` set | `openrouter` or `bedrock` |
 | `SEARCH_PROVIDER` | `duckduckgo` | `tavily` or `duckduckgo` |
-| `USER_AGENT` | `marco-polo/0.1` | Set at module import in `competitors.py`/`keywords.py` |
+| `USER_AGENT` | `marco-polo/0.1` | Set at module import in `competitors.py`, `keywords.py`, `searcher.py` |
 | `BEDROCK_MODEL` | `us.anthropic.claude-haiku-4-5-20251001-v1:0` | Used when `LLM_PROVIDER=bedrock` |
 
 `WebsiteInput.search_provider` model field defaults to `"tavily"` but the searcher factory (`create_searcher()`) falls back to env var `SEARCH_PROVIDER` then `"duckduckgo"`.

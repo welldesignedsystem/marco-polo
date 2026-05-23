@@ -63,21 +63,22 @@ class BedrockProvider(LLMProvider):
 
     def create_llm(self, model_name: str | None = None) -> ChatOpenAI:
         from langchain_aws import ChatBedrockConverse
-
+        logger.info("Creating Bedrock LLM with model %s in region %s (profile: %s)", model_name, self.region, self.profile)
         model = model_name or os.getenv("BEDROCK_MODEL", "us.anthropic.claude-haiku-4-5-20251001-v1:0")
-
+        logger.info("Using Bedrock model: %s", model)
         kwargs: dict = {
             "model": model,
             "temperature": 0,
             "region_name": self.region,
+            "timeout": 300,
         }
-
+        logger.info("Bedrock LLM kwargs before ARN check: %s", kwargs)
         if model.startswith("arn:"):
             kwargs["provider"] = self._extract_provider_from_arn(model)
-
+        logger.info("Bedrock LLM kwargs after ARN check: %s", kwargs)
         if self.profile:
             kwargs["credentials_profile_name"] = self.profile
-
+        logger.info("Final Bedrock LLM kwargs: %s", kwargs)
         return ChatBedrockConverse(**kwargs)  # type: ignore[return-value]
 
 
@@ -200,3 +201,22 @@ def _extract_json(text: str) -> dict | list | None:
             except json.JSONDecodeError:
                 continue
     return None
+
+
+# ── Provider smoke test ─────────────────────────────────────────────
+
+if __name__ == "__main__":
+    from dotenv import load_dotenv
+    load_dotenv()
+
+    for name, provider_cls, kwargs in [
+        ("OpenRouter", OpenRouterProvider, {}),
+        ("Bedrock",    BedrockProvider,    {}),
+    ]:
+        try:
+            provider = provider_cls(**kwargs)
+            llm = provider.create_llm()
+            resp = llm.invoke([("human", "Reply with exactly one word: hello")])
+            print(f"✓ {name}: {resp.content}")
+        except Exception as e:
+            print(f"✗ {name}: {e}")
