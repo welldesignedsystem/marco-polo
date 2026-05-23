@@ -178,10 +178,10 @@ class ReportPDF(FPDF):
 
     def __init__(self) -> None:
         super().__init__()
-        self.add_font("DejaVu", "", f"{FONT_DIR}/DejaVuSans.ttf", uni=True)
-        self.add_font("DejaVu", "B", f"{FONT_DIR}/DejaVuSans-Bold.ttf", uni=True)
-        self.add_font("DejaVu", "I", f"{FONT_DIR}/DejaVuSans-Oblique.ttf", uni=True)
-        self.add_font("DejaVu", "BI", f"{FONT_DIR}/DejaVuSans-BoldOblique.ttf", uni=True)
+        self.add_font("DejaVu", "", f"{FONT_DIR}/DejaVuSans.ttf")
+        self.add_font("DejaVu", "B", f"{FONT_DIR}/DejaVuSans-Bold.ttf")
+        self.add_font("DejaVu", "I", f"{FONT_DIR}/DejaVuSans-Oblique.ttf")
+        self.add_font("DejaVu", "BI", f"{FONT_DIR}/DejaVuSans-BoldOblique.ttf")
 
     def header(self) -> None:
         if self.page_no() > 1:
@@ -225,14 +225,14 @@ class ReportPDF(FPDF):
         self.ln(6)
         self.set_font("DejaVu", "B", 16)
         self.set_text_color(*color)
-        self.cell(0, 12, title)
-        self.ln(14)
+        self.multi_cell(0, 12, title)
+        self.ln(6)
 
     def sub_title(self, title: str) -> None:
         self.set_font("DejaVu", "B", 12)
         self.set_text_color(60, 60, 60)
-        self.cell(0, 10, title)
-        self.ln(8)
+        self.multi_cell(0, 10, title)
+        self.ln(4)
 
     def body_text(self, text: str) -> None:
         self.set_font("DejaVu", "", 10)
@@ -245,13 +245,14 @@ class ReportPDF(FPDF):
         self.set_text_color(40, 40, 40)
         for item in items:
             for line in textwrap.wrap(item, width=95):
-                self.cell(indent)
+                self.set_x(self.l_margin + indent)
                 self.cell(4, 5.5, "\u2022")
                 self.multi_cell(0, 5.5, f" {line}")
             self.ln(1)
 
     def score_bar(self, score: float, max_score: float = 100) -> None:
-        bar_w = 160
+        page_w = self.w - self.l_margin - self.r_margin
+        bar_w = min(160, page_w)
         pct = min(score / max_score, 1.0)
         self.set_fill_color(230, 230, 230)
         self.rect(self.get_x(), self.get_y(), bar_w, 8, "F")
@@ -292,13 +293,12 @@ class ReportPDF(FPDF):
         for c in dim.criteria:
             self.set_font("DejaVu", "B", 9)
             self.set_text_color(40, 40, 40)
-            self.cell(0, 6, f"{c.name}  --  {c.score}/5")
-            self.ln(6)
+            self.multi_cell(0, 6, f"{c.name}  --  {c.score}/5")
             self.score_bar(float(c.score), 5.0)
             self.set_font("DejaVu", "", 9)
             self.set_text_color(80, 80, 80)
             for line in textwrap.wrap(c.finding, width=95):
-                self.cell(6)
+                self.set_x(self.l_margin + 6)
                 self.multi_cell(0, 4.5, line)
             self.ln(3)
 
@@ -321,7 +321,7 @@ class ReportPDF(FPDF):
             self.set_font("DejaVu", "", 10)
             self.set_text_color(40, 40, 40)
             for line in textwrap.wrap(rec, width=95):
-                self.cell(8)
+                self.set_x(self.l_margin + 8)
                 self.multi_cell(0, 5.5, line)
             self.ln(4)
 
@@ -391,5 +391,73 @@ def main() -> None:
     print(f"  AEO: {report.aeo.score:.1f}")
 
 
+# ── Smoke test ──────────────────────────────────────────────────────
+
+def _smoke_test() -> None:
+    print("=== ReportGenerator smoke test ===\n")
+
+    # 1. File loading
+    try:
+        skills = read_file(str(SKILLS_PATH))
+        agents = read_file(str(AGENTS_PATH))
+        print(f"✓ SKILLS.md  ({len(skills)} chars)")
+        print(f"✓ AGENTS.md  ({len(agents)} chars)")
+    except Exception as e:
+        print(f"✗ File loading: {e}")
+        return
+
+    # 2. LLM creation + simple call
+    try:
+        llm = create_llm()
+        resp = llm.invoke([("human", "Reply with exactly one word: hello")])
+        print(f"✓ LLM: {resp.content}")
+    except Exception as e:
+        print(f"✗ LLM: {e}")
+        return
+
+    # 3. Scrape + profile extraction
+    test_url = "https://apacrelocation.com"
+    try:
+        text = scrape_website(test_url)
+        print(f"✓ Scrape ({len(text)} chars from {test_url})")
+    except Exception as e:
+        print(f"✗ Scrape: {e}")
+        return
+
+    try:
+        website_input = WebsiteInput(website=test_url)
+        profile = extract_business_profile(llm, website_input, text)
+        print(f"✓ Profile: {profile.company_name} ({profile.business_domain})")
+    except Exception as e:
+        print(f"✗ Profile: {e}")
+        return
+
+    # 4. Full report generation (runs all three dimensions)
+    try:
+        gen = ReportGenerator()
+        report = gen.generate(test_url)
+        print(f"✓ Report generated — overall score: {report.overall_score:.1f}")
+        print(f"  SEO: {report.seo.score:.1f}")
+        print(f"  GEO: {report.geo.score:.1f}")
+        print(f"  AEO: {report.aeo.score:.1f}")
+    except Exception as e:
+        print(f"✗ Report generation: {e}")
+        return
+
+    # 5. PDF output
+    try:
+        pdf_path = generate_pdf(report, "/tmp/report-smoke-test.pdf")
+        print(f"✓ PDF written to {pdf_path}")
+    except Exception as e:
+        print(f"✗ PDF generation: {e}")
+        return
+
+    print("\n✓ All smoke tests passed")
+
+
 if __name__ == "__main__":
-    main()
+    import sys
+    if len(sys.argv) >= 2 and sys.argv[1] not in ("-h", "--help"):
+        main()
+    else:
+        _smoke_test()
