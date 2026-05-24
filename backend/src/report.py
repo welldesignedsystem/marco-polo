@@ -718,36 +718,52 @@ class ReportPDF(FPDF):
         for rec in report.aeo.recommendations:
             all_items.append(("AEO", rec))
 
+        TEXT_X  = M_L + 37          # text starts after number + pill
+        TEXT_W  = CW - TEXT_X + M_L  # remaining mm width for text
+        LH      = 5.0               # line height mm
+        PAD_V   = 7                 # top/bottom padding inside card
+
         for i, (dim, rec) in enumerate(all_items, 1):
             col, bg = dim_cfg.get(dim, (C["navy"], C["card"]))
-            lines = textwrap.wrap(rec, width=88)
-            ch    = max(16, 8 + len(lines) * 4.8)
+
+            # Wrap to ~60 chars so each line fits in TEXT_W at 9.2 pt
+            lines = textwrap.wrap(rec, width=60)
+            if not lines:
+                lines = [""]
+            text_h = len(lines) * LH
+            ch     = max(22, text_h + PAD_V * 2)
             self._ensure_space(ch + 5)
             y0 = self.get_y()
+
             self._card(M_L, y0, CW, ch, bg, 5)
 
+            # Number badge
+            mid_y = y0 + ch / 2
             self.set_fill_color(*C["navy"])
-            self._rr(M_L + 5, y0 + (ch - 9) / 2, 9, 9, "F", 4.5)
-            self.set_xy(M_L + 5, y0 + (ch - 9) / 2 + 0.5)
+            self._rr(M_L + 5, mid_y - 4.5, 9, 9, "F", 4.5)
+            self.set_xy(M_L + 5, mid_y - 4)
             self.set_font("DejaVu", "B", 7.5)
             self.set_text_color(*C["white"])
             self.cell(9, 8, str(i), align="C")
 
+            # Dim pill
             self.set_fill_color(*col)
-            self._rr(M_L + 18, y0 + (ch - 7) / 2, 14, 7, "F", 3.5)
-            self.set_xy(M_L + 18, y0 + (ch - 7) / 2 + 0.5)
+            self._rr(M_L + 18, mid_y - 3.5, 14, 7, "F", 3.5)
+            self.set_xy(M_L + 18, mid_y - 3)
             self.set_font("DejaVu", "B", 7)
             self.set_text_color(*C["white"])
             self.cell(14, 6, dim, align="C")
 
+            # Text — use cell() per line so x never resets to left margin
             self.set_font("DejaVu", "", 9.2)
             self.set_text_color(*C["text"])
-            ty = y0 + 4
+            ty = y0 + (ch - text_h) / 2   # vertically centred
             for line in lines:
-                self.set_xy(M_L + 37, ty)
-                self.multi_cell(CW - 42, 4.8, line, align="L")
-                ty += 4.8
+                self.set_xy(TEXT_X, ty)
+                self.cell(TEXT_W, LH, line)
+                ty += LH
 
+            # Thin left accent
             self.set_fill_color(*col)
             self.rect(M_L, y0, 1.2, ch, "F")
             self.set_y(y0 + ch + 4)
