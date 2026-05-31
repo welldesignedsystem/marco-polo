@@ -1,14 +1,19 @@
+import os
+import uuid
+
 import uvicorn
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from src.logging_config import get_logger
 from src.competitors import CompetitorFinder
 from src.keywords import KeywordFinder
 from src.models import WebsiteInput, Registration, ReportRequest
+from src.report import ReportGenerator, generate_pdf
 
 load_dotenv()
 
@@ -21,6 +26,8 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
         "https://aeo-app.io.io",
     ],
     allow_credentials=True,
@@ -94,10 +101,25 @@ def register(body: Registration) -> dict:
 
 @app.post("/report")
 def request_report(body: ReportRequest) -> dict:
-    return {
-        "status": "ok",
-        "message": "Report request received. A detailed SEO/GEO/AEO analysis will be sent to your email once ready.",
-    }
+    try:
+        generator = ReportGenerator()
+        report = generator.generate(body.website, search_focus=body.description)
+        pdf_name = f"marco-polo-report-{uuid.uuid4().hex[:12]}.pdf"
+        pdf_path = os.path.join("/tmp", pdf_name)
+        generate_pdf(report, pdf_path)
+        logger.info("Report PDF generated at %s", pdf_path)
+        return {"status": "ok", "pdf_path": pdf_path}
+    except Exception as exc:
+        raise external_service_error(exc) from exc
+
+
+@app.get("/report/download/{filename:path}")
+def download_report(filename: str) -> FileResponse:
+    safe = os.path.basename(filename)
+    path = os.path.join("/tmp", safe)
+    if not os.path.exists(path):
+        raise HTTPException(404, "Report file not found")
+    return FileResponse(path, media_type="application/pdf", filename=safe)
 
 
 def run() -> None:

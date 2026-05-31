@@ -156,9 +156,10 @@ class ReportGenerator:
         )
         top_findings = all_recs[:3]
 
+        company_name = profile.company_name if profile.company_name != "Unknown company" else url
         return ComplianceReport(
             website=url,
-            company_name=profile.company_name,
+            company_name=company_name,
             overall_score=overall,
             seo=seo,
             geo=geo,
@@ -846,7 +847,7 @@ def _smoke_test() -> None:
         print(f"✗ LLM: {e}")
         return
 
-    test_url = "https://apacrelocation.com"
+    test_url = "https://samis.com.sg"
     try:
         text = scrape_website(test_url)
         print(f"✓ Scrape ({len(text)} chars from {test_url})")
@@ -874,7 +875,7 @@ def _smoke_test() -> None:
         return
 
     try:
-        pdf_path = generate_pdf(report, "/tmp/report-smoke-test.pdf")
+        pdf_path = generate_pdf(report, "/tmp/mclarens.com")
         print(f"✓ PDF written to {pdf_path}")
     except Exception as e:
         print(f"✗ PDF generation: {e}")
